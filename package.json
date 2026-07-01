@@ -1,0 +1,33 @@
+{
+  "name": "vkrana-me",
+  "version": "0.0.1",
+  "description": "Personal CLI for Vijendra Rana (vkrana).",
+  "type": "module",
+  "bin": {
+    "vkrana-me": "./dist/vkrana-me.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node ./dist/vkrana-me.js",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "cli",
+    "vkrana"
+  ],
+  "author": "Vijendra Rana <vij.rana.tech@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  }
+}
