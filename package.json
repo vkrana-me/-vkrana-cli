@@ -16,6 +16,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "start": "node ./dist/vkrana-me.js",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
@@ -26,9 +27,13 @@
   "author": "Vijendra Rana <vij.rana.tech@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/node": "^20.0.0",
+    "eslint": "^9.39.4",
+    "globals": "^15.15.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.62.1"
   },
   "dependencies": {
     "boxen": "^7.1.1",
