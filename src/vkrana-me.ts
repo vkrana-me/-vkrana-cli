@@ -1,38 +1,39 @@
 #!/usr/bin/env node
 
-const VERSION = "0.0.1";
+import { Command } from "commander";
+import { profile, validateProfile } from "./profile.js";
+import { renderJson, renderText } from "./commands/info.js";
+import pkg from "../package.json" with { type: "json" };
 
-const HELP = `vkrana-me — personal CLI for Vijendra Rana
-
-Usage:
-  vkrana-me [command] [options]
-
-Commands:
-  help              Show this help message
-  version           Print the CLI version
-
-Options:
-  -h, --help        Show this help message
-  -v, --version     Print the CLI version
-`;
-
-function main(argv: string[]): number {
-  const args = argv.slice(2);
-  const first = args[0];
-
-  if (first === "-v" || first === "--version" || first === "version") {
-    console.log(VERSION);
-    return 0;
+function runInfo(opts: { json?: boolean }): void {
+  const errors = validateProfile(profile);
+  if (errors.length) {
+    console.error("Invalid profile data:");
+    for (const e of errors) console.error(`  - ${e}`);
+    process.exitCode = 1;
+    return;
   }
 
-  if (!first || first === "-h" || first === "--help" || first === "help") {
-    console.log(HELP);
-    return 0;
-  }
-
-  console.error(`Unknown command: ${first}\n`);
-  console.error(HELP);
-  return 1;
+  console.log(opts.json ? renderJson(profile) : renderText(profile));
 }
 
-process.exit(main(process.argv));
+const program = new Command();
+
+program
+  .name("vkrana-me")
+  .description("Personal CLI for Vijendra Rana")
+  .version(pkg.version, "-v, --version", "Print the CLI version");
+
+program.showHelpAfterError();
+
+program
+  .command("info", { isDefault: true })
+  .description("Print profile info (default command)")
+  .option("--json", "Output raw JSON for scripting")
+  .allowExcessArguments(false)
+  .action((opts: { json?: boolean }) => runInfo(opts));
+
+program.parseAsync(process.argv).catch((err: unknown) => {
+  console.error(err instanceof Error ? err.message : String(err));
+  process.exit(1);
+});
