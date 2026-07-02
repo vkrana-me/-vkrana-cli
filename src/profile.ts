@@ -33,9 +33,9 @@ export interface Profile {
 export const profile: Profile = {
   name: "Vijendra Rana",
   title: "Software Engineer",
-  about: "Engineer building CLIs, backend services, and developer tooling.",
+  about: "Lead Engineer, curious learner, FE Architect, AI Engineer.",
   location: "India",
-  skills: ["Node.js", "TypeScript", "DevOps", "AWS"],
+  skills: ["TypeScript", "Python", "Azure", "AWS", "React", "Svelte"],
   experience: [],
   links: {
     github: "https://github.com/vkrana-me",
