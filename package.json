@@ -1,6 +1,6 @@
 {
   "name": "vkrana-me",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Personal CLI for Vijendra Rana (vkrana).",
   "type": "module",
   "bin": {
