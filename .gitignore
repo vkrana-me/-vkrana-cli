@@ -5,3 +5,6 @@ dist/
 .env
 .env.*
 npm-debug.log*
+.agents/
+.claude/
+.copilot/
