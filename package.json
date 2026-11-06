@@ -19,7 +19,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "gen:avatar": "bun scripts/gen-avatar.ts"
   },
   "keywords": [
     "cli",

@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import { profile, validateProfile } from "./profile.js";
 import { renderJson, renderPlain, useRichOutput } from "./commands/info.js";
+import { BLOG_URL, fetchBlogPosts, renderBlogsPlain } from "./blogs.js";
 import pkg from "../package.json" with { type: "json" };
 
 async function runInfo(opts: { json?: boolean }): Promise<void> {
@@ -40,6 +41,24 @@ program
   .option("--json", "Output raw JSON for scripting")
   .allowExcessArguments(false)
   .action((opts: { json?: boolean }) => runInfo(opts));
+
+async function runBlogs(opts: { json?: boolean }): Promise<void> {
+  if (!opts.json && useRichOutput()) {
+    const { runBlogsTui } = await import("./ui/run.js");
+    await runBlogsTui();
+    return;
+  }
+  const posts = await fetchBlogPosts();
+  console.log(opts.json ? JSON.stringify(posts, null, 2) : renderBlogsPlain(posts));
+}
+
+program
+  .command("blogs")
+  .alias("blog")
+  .description(`List blog posts from ${BLOG_URL} (enter opens in browser)`)
+  .option("--json", "Output raw JSON for scripting")
+  .allowExcessArguments(false)
+  .action((opts: { json?: boolean }) => runBlogs(opts));
 
 program.parseAsync(process.argv).catch((err: unknown) => {
   console.error(err instanceof Error ? err.message : String(err));

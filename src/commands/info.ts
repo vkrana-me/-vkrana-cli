@@ -1,5 +1,6 @@
 import wrapAnsi from "wrap-ansi";
 import type { Profile } from "../profile.js";
+import { BLOG_URL } from "../blogs.js";
 
 /** Render the profile as raw, pretty-printed JSON (for scripting). */
 export function renderJson(profile: Profile): string {
@@ -54,6 +55,11 @@ export function renderPlain(profile: Profile, width = 80): string {
     lines.push("Links:");
     for (const [k, v] of links) lines.push(`  ${k}: ${v}`);
   }
+
+  lines.push("");
+  lines.push("Blog:");
+  lines.push(`  ${BLOG_URL}`);
+  lines.push("  Run `vkrana-me blog` to browse posts");
 
   return lines.join("\n");
 }

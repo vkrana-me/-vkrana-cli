@@ -1,21 +1,44 @@
-import { useKeyboard } from "@opentui/react";
+import { useKeyboard, useTerminalDimensions } from "@opentui/react";
 import type { Profile } from "../profile.js";
 import { profileLinks } from "../commands/info.js";
+import { BLOG_URL } from "../blogs.js";
+import { AVATAR_PNG } from "./avatar-data.js";
+
+/** Avatar sizes in terminal cells (cells are ~2x taller than wide); large on wide terminals. */
+export const AVATAR_SIZES = {
+  large: { cols: 36, rows: 17 },
+  small: { cols: 28, rows: 13 },
+} as const;
+/** Minimum width of the text column next to the avatar. */
+const TEXT_MIN = 42;
+const TEXT_MAX = 64;
 
 const C = {
+  frame: "#3e4451",
   accent: "#56b6c2",
+  name: "#ffffff",
   title: "#e5c07b",
-  skill: "#98c379",
+  text: "#abb2bf",
+  dim: "#7f848e",
+  chipBg: "#2c313a",
+  chipFg: "#98c379",
   company: "#c678dd",
   link: "#61afef",
-  dim: "#7f848e",
+};
+
+const NBSP = "\u00a0";
+const LINK_LABELS: Record<string, string> = {
+  github: "GitHub",
+  linkedin: "LinkedIn",
+  email: "Email",
+  website: "Website",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <box flexDirection="column" flexShrink={0} marginTop={1}>
       <text fg={C.accent}>
-        <b>{title}</b>
+        <b>{title.toUpperCase()}</b>
       </text>
       {children}
     </box>
@@ -28,35 +51,62 @@ export function App({ profile, onExit }: { profile: Profile; onExit: () => void 
   });
 
   const links = profileLinks(profile);
+  const { width, height } = useTerminalDimensions();
+  // Photo on the left when it fits beside a readable text column; shrink it first, then hide it.
+  const fits = (a: { cols: number; rows: number }) => width >= a.cols + TEXT_MIN + 8 && height >= a.rows + 2;
+  const avatar = fits(AVATAR_SIZES.large) ? AVATAR_SIZES.large : fits(AVATAR_SIZES.small) ? AVATAR_SIZES.small : null;
 
   return (
     <box
-      flexDirection="column"
+      flexDirection="row"
       flexGrow={1}
       border
       borderStyle="rounded"
-      borderColor={C.accent}
+      borderColor={C.frame}
       title=" vkrana-me "
       titleAlignment="center"
+      titleColor={C.accent}
       bottomTitle=" ↑↓ scroll · q quit "
       bottomTitleAlignment="center"
+      alignItems="center"
+      justifyContent="center"
+      paddingLeft={2}
+      paddingRight={1}
     >
-      <scrollbox focused flexGrow={1} paddingLeft={1} paddingRight={1}>
-        <text>
+      {avatar && (
+        <box flexShrink={0} marginRight={3}>
+          <image source={AVATAR_PNG} fit="fit" protocol="auto" width={avatar.cols} height={avatar.rows} />
+        </box>
+      )}
+      <scrollbox
+        focused
+        flexGrow={1}
+        maxWidth={TEXT_MAX}
+        height="100%"
+        contentOptions={{ minHeight: "100%", justifyContent: "center" }}
+      >
+        <text fg={C.name}>
           <b>{profile.name}</b>
-          <span fg={C.dim}> · </span>
-          <span fg={C.title}>{profile.title}</span>
         </text>
-        {profile.location ? <text fg={C.dim}>📍 {profile.location}</text> : null}
-        {profile.about ? <text marginTop={1}>{profile.about}</text> : null}
+        <text>
+          <span fg={C.title}>{profile.title}</span>
+          {profile.location ? <span fg={C.dim}> · 📍 {profile.location}</span> : null}
+        </text>
+        {profile.about ? (
+          <text fg={C.text} marginTop={1}>
+            {profile.about}
+          </text>
+        ) : null}
 
         {profile.skills.length > 0 && (
           <Section title="Skills">
             <text>
               {profile.skills.map((s, i) => (
                 <span key={s}>
-                  {i > 0 && <span fg={C.dim}> • </span>}
-                  <span fg={C.skill}>{s}</span>
+                  {i > 0 ? " " : null}
+                  <span fg={C.chipFg} bg={C.chipBg}>
+                    {`${NBSP}${s.replaceAll(" ", NBSP)}${NBSP}`}
+                  </span>
                 </span>
               ))}
             </text>
@@ -71,11 +121,11 @@ export function App({ profile, onExit }: { profile: Profile; onExit: () => void 
                   <b>{e.role}</b>
                   <span fg={C.dim}> @ </span>
                   <span fg={C.company}>{e.company}</span>
-                  <span fg={C.dim}> ({e.period})</span>
+                  <span fg={C.dim}> · {e.period}</span>
                 </text>
                 {e.highlights.map((h) => (
-                  <text key={h}>
-                    <span fg={C.dim}>  › </span>
+                  <text key={h} fg={C.text}>
+                    <span fg={C.dim}>› </span>
                     {h}
                   </text>
                 ))}
@@ -88,7 +138,7 @@ export function App({ profile, onExit }: { profile: Profile; onExit: () => void 
           <Section title="Links">
             {links.map(([k, v]) => (
               <text key={k}>
-                <span fg={C.dim}>{k.padEnd(9)} </span>
+                <span fg={C.dim}>{(LINK_LABELS[k] ?? k).padEnd(9)}</span>
                 <a href={k === "email" ? `mailto:${v}` : v} fg={C.link}>
                   {v}
                 </a>
@@ -96,6 +146,21 @@ export function App({ profile, onExit }: { profile: Profile; onExit: () => void 
             ))}
           </Section>
         )}
+
+        <Section title="Blog">
+          <text>
+            <span fg={C.dim}>{"Posts".padEnd(9)}</span>
+            <a href={BLOG_URL} fg={C.link}>
+              {BLOG_URL}
+            </a>
+          </text>
+          <text fg={C.dim}>
+            {"Browse".padEnd(9)}
+            <span fg={C.chipFg} bg={C.chipBg}>
+              {`${NBSP}vkrana-me${NBSP}blog${NBSP}`}
+            </span>
+          </text>
+        </Section>
       </scrollbox>
     </box>
   );
