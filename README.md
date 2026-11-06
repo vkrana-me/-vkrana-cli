@@ -1,31 +1,38 @@
 # vkrana-me
 
-Personal CLI for Vijendra Rana.
+Personal CLI for Vijendra Rana, built with [OpenTUI](https://opentui.com) + React.
 
-## Install (local dev)
-
-```bash
-npm install
-npm run build
-npm link
-vkrana-me --help
-```
+Requires [Bun](https://bun.sh) ≥ 1.3.14.
 
 ## Usage
 
 ```bash
-vkrana-me --help      # show help
-vkrana-me --version   # print version
+bunx vkrana-me           # interactive profile view (↑↓ scroll, q/esc quit)
+vkrana-me --json         # raw JSON for scripting
+vkrana-me | cat          # plain text when piped / NO_COLOR / TERM=dumb
+vkrana-me --version
+```
+
+## Install (local dev)
+
+```bash
+bun install
+bun run build
+bun link
+vkrana-me --help
 ```
 
 ## Development
 
-- Source: `src/vkrana-me.ts`
-- Build: `tsup` → `dist/vkrana-me.js` (ESM, Node 18+)
+- Entry: `src/vkrana-me.ts` (commander)
+- UI: `src/ui/App.tsx` (OpenTUI React), launched by `src/ui/run.tsx`
+- Build: `bun build` → `dist/vkrana-me.js` (dependencies external, so the native OpenTUI package resolves at install)
 
 ```bash
-npm run dev        # watch build
-npm run typecheck  # tsc --noEmit
+bun run dev        # run from source
+bun run typecheck  # tsc --noEmit
+bun run lint
+bun test           # OpenTUI testRender snapshots + plain/json output
 ```
 
 ## License
