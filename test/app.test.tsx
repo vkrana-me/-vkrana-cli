@@ -39,6 +39,18 @@ test("avatar image is left of the profile on 80x24, no divider", async () => {
   for (const line of inner) expect((line.match(/│/g) ?? []).length).toBeLessThanOrEqual(2);
 });
 
+test("name banner in slick font on large terminals", async () => {
+  const frame = await frameAt(120, 32);
+  expect(frame).toContain("╭╮╱╱╭╮"); // top row of "V" in the slick font
+  expect(frame).not.toContain(profile.name); // plain name is replaced by the banner
+});
+
+test("plain bold name instead of banner on 80x24", async () => {
+  const frame = await frameAt(80, 24);
+  expect(frame).not.toContain("╭╮╱╱╭╮");
+  expect(frame).toContain(profile.name);
+});
+
 test("avatar is hidden on small terminals", async () => {
   expect(hasImageBlocks(await frameAt(70, 30))).toBe(false);
 });
