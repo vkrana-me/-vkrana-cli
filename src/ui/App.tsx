@@ -14,6 +14,8 @@ export const AVATAR_SIZES = {
 /** Minimum width of the text column next to the avatar. */
 const TEXT_MIN = 42;
 const TEXT_MAX = 64;
+/** Approximate rows the profile text needs (name, title, about, skills, links, blog) at ~60 cols. */
+const TEXT_ROWS = 18;
 /** Name banner drawn in OpenTUI's "slick" ASCII font. */
 const BANNER_FONT = "slick" as const;
 
@@ -62,9 +64,16 @@ export function App({ profile, active = true }: { profile: Profile; active?: boo
   const banner = measureText({ text: profile.name, font: BANNER_FONT });
   const showBanner = innerW >= banner.width && innerH >= banner.height + 1 + AVATAR_SIZES.large.rows;
   const bodyH = innerH - (showBanner ? banner.height + 1 : 0);
-  // Photo on the left when it fits beside a readable text column; shrink it first, then hide it.
-  const fits = (a: { cols: number; rows: number }) => width >= a.cols + TEXT_MIN + 8 && bodyH >= a.rows;
-  const avatar = fits(AVATAR_SIZES.large) ? AVATAR_SIZES.large : fits(AVATAR_SIZES.small) ? AVATAR_SIZES.small : null;
+  // Photo on the left when it fits beside a readable text column (shrink it first). On narrow but
+  // tall terminals put it above the text instead; hide it only when neither fits.
+  type Size = { cols: number; rows: number };
+  const sizes: Size[] = [AVATAR_SIZES.large, AVATAR_SIZES.small];
+  const fitsSide = (a: Size) => width >= a.cols + TEXT_MIN + 8 && bodyH >= a.rows;
+  const fitsTop = (a: Size) => innerW >= a.cols && bodyH >= a.rows + 1 + TEXT_ROWS;
+  const side = sizes.find(fitsSide);
+  const top = side ? undefined : sizes.find(fitsTop);
+  const avatar = side ?? top ?? null;
+  const stacked = Boolean(top);
 
   return (
     <box
@@ -88,9 +97,15 @@ export function App({ profile, active = true }: { profile: Profile; active?: boo
           <ascii-font text={profile.name} font={BANNER_FONT} color={[C.accent, C.frame]} selectable={false} />
         </box>
       )}
-      <box flexDirection="row" flexGrow={1} width="100%" alignItems="center" justifyContent="center">
+      <box
+        flexDirection={stacked ? "column" : "row"}
+        flexGrow={stacked ? 0 : 1}
+        width="100%"
+        alignItems="center"
+        justifyContent="center"
+      >
         {avatar && (
-          <box flexShrink={0} marginRight={3}>
+          <box flexShrink={0} marginRight={stacked ? 0 : 3} marginBottom={stacked ? 1 : 0}>
             <image source={AVATAR_PNG} fit="fit" protocol="auto" width={avatar.cols} height={avatar.rows} />
           </box>
         )}
@@ -98,8 +113,9 @@ export function App({ profile, active = true }: { profile: Profile; active?: boo
           focused={active}
           flexGrow={1}
           maxWidth={TEXT_MAX}
-          height="100%"
-          contentOptions={{ minHeight: "100%", justifyContent: "center" }}
+          width={stacked ? Math.min(TEXT_MAX, innerW) : undefined}
+          height={stacked ? Math.min(TEXT_ROWS, bodyH - (avatar?.rows ?? 0) - 1) : "100%"}
+          contentOptions={{ minHeight: "100%", justifyContent: stacked ? "flex-start" : "center" }}
         >
           {!showBanner && (
             <text fg={C.name}>
@@ -108,7 +124,7 @@ export function App({ profile, active = true }: { profile: Profile; active?: boo
           )}
           <text>
             <span fg={C.title}>{profile.title}</span>
-            {profile.location ? <span fg={C.dim}> · 📍 {profile.location}</span> : null}
+            {profile.location ? <span fg={C.dim}> · {profile.location}</span> : null}
           </text>
           {profile.about ? (
             <text fg={C.text} marginTop={1}>
