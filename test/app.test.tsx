@@ -51,6 +51,19 @@ test("plain bold name instead of banner on 80x24", async () => {
   expect(frame).toContain(profile.name);
 });
 
+test("avatar sits above the text on narrow but tall terminals", async () => {
+  const frame = await frameAt(67, 58);
+  const lines = frame.split("\n");
+  const firstImageRow = lines.findIndex((l) => /[\u2580-\u259f]/.test(l));
+  const nameRow = lines.findIndex((l) => l.includes(profile.name));
+  expect(firstImageRow).toBeGreaterThan(-1);
+  expect(nameRow).toBeGreaterThan(firstImageRow);
+});
+
+test("location has no emoji (emoji widths differ between terminals)", async () => {
+  expect(await frameAt(80, 24)).toContain(`${profile.title} · ${profile.location}`);
+});
+
 test("avatar is hidden on small terminals", async () => {
   expect(hasImageBlocks(await frameAt(70, 30))).toBe(false);
 });
