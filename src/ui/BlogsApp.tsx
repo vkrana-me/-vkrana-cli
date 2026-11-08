@@ -1,19 +1,20 @@
-import { useKeyboard } from "@opentui/react";
 import { useEffect, useState } from "react";
 import { BLOG_URL, type BlogPost } from "../blogs.js";
+import { HintBar, Key } from "./Hint.js";
 
 const C = { accent: "#56b6c2", dim: "#7f848e", ok: "#98c379", err: "#e06c75", sel: "#2c313a" };
 
 type State = { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready"; posts: BlogPost[] };
 
+/** Blog list view. Keys (back, quit, "/" menu) are handled by the Shell; `active` gives the list focus. */
 export function BlogsApp({
   load,
   onOpen,
-  onExit,
+  active = true,
 }: {
   load: () => Promise<BlogPost[]>;
   onOpen: (url: string) => void;
-  onExit: () => void;
+  active?: boolean;
 }) {
   const [state, setState] = useState<State>({ kind: "loading" });
   const [status, setStatus] = useState("");
@@ -29,10 +30,6 @@ export function BlogsApp({
     };
   }, [load]);
 
-  useKeyboard((key) => {
-    if (key.name === "q" || key.name === "escape") onExit();
-  });
-
   const count = state.kind === "ready" ? ` (${state.posts.length})` : "";
 
   return (
@@ -44,7 +41,7 @@ export function BlogsApp({
       borderColor={C.accent}
       title={` vkrana-me · blogs${count} `}
       titleAlignment="center"
-      bottomTitle=" ↑↓ move · enter open · q quit "
+      bottomTitle=" ↑↓ move · enter open · esc back · / commands "
       bottomTitleAlignment="center"
     >
       {state.kind === "loading" && <text fg={C.dim}>Fetching posts from {BLOG_URL}…</text>}
@@ -58,7 +55,7 @@ export function BlogsApp({
       {state.kind === "ready" && state.posts.length === 0 && <text fg={C.dim}>No posts found. Visit {BLOG_URL}</text>}
       {state.kind === "ready" && state.posts.length > 0 && (
         <select
-          focused
+          focused={active}
           flexGrow={1}
           showScrollIndicator
           selectedBackgroundColor={C.sel}
@@ -81,6 +78,9 @@ export function BlogsApp({
         />
       )}
       {status ? <text fg={C.ok}>{status}</text> : null}
+      <HintBar>
+        <Key>Enter</Key> opens a post in your browser · <Key>Esc</Key> back to profile
+      </HintBar>
     </box>
   );
 }

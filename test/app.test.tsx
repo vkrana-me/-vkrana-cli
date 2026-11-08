@@ -7,7 +7,7 @@ import { AVATAR_PNG, AVATAR_PX } from "../src/ui/avatar-data.js";
 import { imageInfo } from "@opentui/core";
 
 async function frameAt(width: number, height: number) {
-  const setup = await testRender(<App profile={profile} onExit={() => {}} />, { width, height });
+  const setup = await testRender(<App profile={profile} />, { width, height });
   try {
     await setup.renderOnce();
     await Bun.sleep(50); // let the embedded PNG decode
@@ -55,7 +55,7 @@ test("avatar is hidden on small terminals", async () => {
   expect(hasImageBlocks(await frameAt(70, 30))).toBe(false);
 });
 test("App renders profile sections", async () => {
-  const setup = await testRender(<App profile={profile} onExit={() => {}} />, { width: 80, height: 24 });
+  const setup = await testRender(<App profile={profile} />, { width: 80, height: 24 });
   try {
     await setup.renderOnce();
     const frame = setup.captureCharFrame();
@@ -65,7 +65,8 @@ test("App renders profile sections", async () => {
     expect(frame).toContain("TypeScript");
     expect(frame).toContain("LINKS");
     expect(frame).toContain("BLOG");
-    expect(frame).toMatch(/vkrana-me\sblog/); // chip uses non-breaking spaces
+    expect(frame).toMatch(/Read\s+\s\/blog\s\sright here/); // chips pad with non-breaking spaces
+    expect(frame).toMatch(/Type\s+\/blog\s+to read my latest posts/);
   } finally {
     setup.renderer.destroy();
   }

@@ -1,9 +1,10 @@
 import { measureText } from "@opentui/core";
-import { useKeyboard, useTerminalDimensions } from "@opentui/react";
+import { useTerminalDimensions } from "@opentui/react";
 import type { Profile } from "../profile.js";
 import { profileLinks } from "../commands/info.js";
 import { BLOG_URL } from "../blogs.js";
 import { AVATAR_PNG } from "./avatar-data.js";
+import { HintBar, Key } from "./Hint.js";
 
 /** Avatar sizes in terminal cells (cells are ~2x taller than wide); large on wide terminals. */
 export const AVATAR_SIZES = {
@@ -48,16 +49,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function App({ profile, onExit }: { profile: Profile; onExit: () => void }) {
-  useKeyboard((key) => {
-    if (key.name === "q" || key.name === "escape") onExit();
-  });
-
+/** Profile view. Keys (quit, "/" menu) are handled by the Shell; `active` gives the scroll area focus. */
+export function App({ profile, active = true }: { profile: Profile; active?: boolean }) {
   const links = profileLinks(profile);
   const { width, height } = useTerminalDimensions();
   // Inner area = terminal minus border (2) and side padding (2).
   const innerW = width - 4;
-  const innerH = height - 2;
+  // Rows inside the border, minus the hint line and its gap at the bottom.
+  const innerH = height - 2 - 2;
   // Big "slick" name banner across the top only when the body below still fits unscrolled
   // (needs ~26 rows); otherwise a plain bold name in the text column.
   const banner = measureText({ text: profile.name, font: BANNER_FONT });
@@ -77,7 +76,7 @@ export function App({ profile, onExit }: { profile: Profile; onExit: () => void 
       title=" vkrana-me "
       titleAlignment="center"
       titleColor={C.accent}
-      bottomTitle=" ↑↓ scroll · q quit "
+      bottomTitle=" / commands · ↑↓ scroll · q quit "
       bottomTitleAlignment="center"
       alignItems="center"
       justifyContent="center"
@@ -96,7 +95,7 @@ export function App({ profile, onExit }: { profile: Profile; onExit: () => void 
           </box>
         )}
         <scrollbox
-          focused
+          focused={active}
           flexGrow={1}
           maxWidth={TEXT_MAX}
           height="100%"
@@ -174,14 +173,16 @@ export function App({ profile, onExit }: { profile: Profile; onExit: () => void 
               </a>
             </text>
             <text fg={C.dim}>
-              {"Browse".padEnd(9)}
-              <span fg={C.chipFg} bg={C.chipBg}>
-                {`${NBSP}vkrana-me${NBSP}blog${NBSP}`}
-              </span>
+              {"Read".padEnd(9)}
+              <Key>/blog</Key>
+              {" right here"}
             </text>
           </Section>
         </scrollbox>
       </box>
+      <HintBar>
+        Type <Key>/blog</Key> to read my latest posts · <Key>/</Key> for all commands
+      </HintBar>
     </box>
   );
 }

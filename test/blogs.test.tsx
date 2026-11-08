@@ -33,10 +33,7 @@ test("renderBlogsPlain lists title and url", () => {
 });
 
 test("BlogsApp shows loaded posts", async () => {
-  const setup = await testRender(
-    <BlogsApp load={async () => sample} onOpen={() => {}} onExit={() => {}} />,
-    { width: 80, height: 16 },
-  );
+  const setup = await testRender(<BlogsApp load={async () => sample} onOpen={() => {}} />, { width: 80, height: 16 });
   try {
     await setup.renderOnce();
     await Bun.sleep(10);
@@ -52,7 +49,7 @@ test("BlogsApp shows loaded posts", async () => {
 
 test("BlogsApp shows fetch errors", async () => {
   const setup = await testRender(
-    <BlogsApp load={async () => Promise.reject(new Error("offline"))} onOpen={() => {}} onExit={() => {}} />,
+    <BlogsApp load={async () => Promise.reject(new Error("offline"))} onOpen={() => {}} />,
     { width: 80, height: 10 },
   );
   try {

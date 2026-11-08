@@ -44,8 +44,8 @@ program
 
 async function runBlogs(opts: { json?: boolean }): Promise<void> {
   if (!opts.json && useRichOutput()) {
-    const { runBlogsTui } = await import("./ui/run.js");
-    await runBlogsTui();
+    const { runTui } = await import("./ui/run.js");
+    await runTui(profile, "blogs");
     return;
   }
   const posts = await fetchBlogPosts();

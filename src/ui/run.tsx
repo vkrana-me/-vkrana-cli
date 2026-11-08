@@ -1,27 +1,25 @@
 import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
-import type { ReactNode } from "react";
 import type { Profile } from "../profile.js";
 import { fetchBlogPosts, openInBrowser } from "../blogs.js";
-import { App } from "./App.js";
-import { BlogsApp } from "./BlogsApp.js";
+import { Shell, type View } from "./Shell.js";
 
-/** Mount a full-screen OpenTUI React view; resolves after the terminal is restored. */
-async function mount(view: (exit: () => void) => ReactNode): Promise<void> {
+/** Launch the full-screen app on the given view; resolves after the terminal is restored. */
+export async function runTui(profile: Profile, view: View = "info"): Promise<void> {
   const renderer = await createCliRenderer({ exitOnCtrlC: true });
   try {
-    createRoot(renderer).render(view(() => renderer.destroy()));
+    createRoot(renderer).render(
+      <Shell
+        profile={profile}
+        initialView={view}
+        loadPosts={fetchBlogPosts}
+        onOpen={openInBrowser}
+        onExit={() => renderer.destroy()}
+      />,
+    );
   } catch (err) {
     renderer.destroy();
     throw err;
   }
   await renderer.closed;
-}
-
-export function runTui(profile: Profile): Promise<void> {
-  return mount((exit) => <App profile={profile} onExit={exit} />);
-}
-
-export function runBlogsTui(): Promise<void> {
-  return mount((exit) => <BlogsApp load={() => fetchBlogPosts()} onOpen={openInBrowser} onExit={exit} />);
 }
